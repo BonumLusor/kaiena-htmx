@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0" />
+        <title>Kaiena</title>
+        <link
+            rel="stylesheet"
+            href="../styles/calendar.css" />
+        <script
+            src="https://unpkg.com/htmx.org@1.9.5"
+            integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+            crossorigin="anonymous"></script>
+        <script
+            src="https://kit.fontawesome.com/ca2423a130.js"
+            crossorigin="anonymous"></script>
+        <script src="/javascript/calendar.js"></script>
+    </head>
+    <body>
+        <header>
+            <div class="client">
+                <h1 id="client-name"></h1>
+            </div>
+            <div class="date-wrapper">
+                <button onclick="changeMonth(-1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                    <h1
+                    hx-get="/php/calendar/current-month.php"
+                    hx-trigger="load, update-month"
+                    hx-vals="js:{date: month, year: year}"
+                    id="month"></h1>
+                <button onclick="changeMonth(1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </header>
+        <div id="background-image">
+            <table>
+                <thead>
+                    <tr>
+                        <th><div class="table-header">Segunda</div></th>
+                        <th><div class="table-header">Terça</div></th>
+                        <th><div class="table-header">Quarta</div></th>
+                        <th><div class="table-header">Quinta</div></th>
+                        <th><div class="table-header">Sexta</div></th>
+                    </tr>
+                </thead>
+                <tbody
+                    hx-get="/php/calendar/calendar-table.php"
+                    hx-trigger="load, update-month"
+                    hx-vals="js:{date: month, year: year}"
+                    id="calendar"></tbody>
+            </table>
+        </div>
+    </body>
+
+    <script>
+        const port = 3000;
+        const baseURL = `http://localhost:${port}`;
+        var actualMonth = new Date().getMonth() + 1;
+        var adder = 0;
+        var month = actualMonth + adder;
+        var year = 0;
+        var clientId = 20;
+        var client = {};
+        const name = document.querySelector('#client-name');
+        let border = 'linear-gradient(45deg, ';
+
+        function changeMonth(modifier) {
+            month = month + modifier;
+            if (month > 12) {
+                month = 1;
+                year++;
+            } else if (month < 1) {
+                month = 12;
+                year--;
+            }
+            htmx.trigger('#month', 'update-month');
+            htmx.trigger('#calendar', 'update-month');
+        }
+
+        try {
+            fetch(`${baseURL}/clients/${clientId}`)
+                .then((response) => response.json())
+                .then((response) => {
+                    client = response.data;
+                    name.innerHTML = client.name;
+
+                    const length = client.color.split(',').length;
+
+                    client.color.split(',').forEach((color, index) => {
+                        let percent;
+                        if (index == 0) percent = 0;
+                        else if (index == length - 1) percent = 100;
+                        else percent = index * Math.round(100 / (length - 1));
+
+                        border += `${color} ${percent}% `;
+
+                        if (index != length - 1) {
+                            border += ',';
+                        } else {
+                            border += ')';
+                        }
+                    });
+
+                    document.getElementById(
+                        'background-image'
+                    ).style.backgroundImage = border;
+                });
+        } catch (error) {
+            console.log(error);
+        }
+
+        
+
+    </script>
+</html>

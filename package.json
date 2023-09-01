@@ -1,0 +1,10 @@
+{
+  "name": "kaiena-htmx",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "host": "php -S 127.0.0.1:8000 -t ."
+  },
+  "author": "",
+  "license": "ISC"
+}
