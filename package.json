@@ -1,10 +1,21 @@
 {
-  "name": "kaiena-htmx",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "host": "php -S 127.0.0.1:8000 -t ."
+    "start": "nodemon --es-module-specifier-resolution=node"
   },
+  "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mysql2": "^3.2.0",
+    "nodemon": "^2.0.22"
+  }
 }
