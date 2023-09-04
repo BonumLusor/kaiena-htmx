@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0" />
+        <title>Kaiena</title>
+        <link
+            rel="stylesheet"
+            href="./styles/home.css" />
+        <link
+            rel="stylesheet"
+            href="./styles/main.css" />
+        <script
+            src="https://unpkg.com/htmx.org@1.9.5"
+            integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+            crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div id="client-wrapper"></div>
+    </body>
+
+    <script>
+        const port = 3001;
+        const baseURL = `http://192.168.0.87:${port}`;
+        let clients = [];
+        const clientWrapper = document.getElementById('client-wrapper');
+
+        try {
+            fetch(`${baseURL}/clients`)
+                .then((response) => response.json())
+                .then((response) => {
+                    clients = response.data;
+                    clients.forEach((element) => {
+                        clientWrapper.innerHTML += `
+                            <div class="gradient-border" id="${element.name}" >
+                               
+                                <a class="client" href="/calendar">
+                                    <h1>${element.name}</h1>
+                                </a>
+                            </div>
+                        `;
+                        console.log(element.color.split(','))
+                        const client = document.getElementById(element.name);
+                        const length = element.color.split(',').length;
+                        let border = 'linear-gradient(45deg, ';
+
+                        element.color.split(',').forEach((color, index) => {
+                            let percent;
+                            if (index == 0) percent = 0;
+                            else if (index == length - 1) percent = 100;
+                            else
+                                percent =
+                                    index * Math.round(100 / (length - 1));
+
+                            border += `${color} ${percent}% `;
+
+                            if (index != length - 1) {
+                                border += ',';
+                            } else {
+                                border += ')';
+                            }
+                        });
+                        console.log(border)
+                        client.style.background = border;
+                    });
+                });
+        } catch (error) {
+            console.log(error);
+        }
+    </script>
+</html>

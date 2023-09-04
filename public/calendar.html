@@ -9,6 +9,9 @@
         <link
             rel="stylesheet"
             href="../styles/calendar.css" />
+            <link
+            rel="stylesheet"
+            href="./styles/main.css" />
         <script
             src="https://unpkg.com/htmx.org@1.9.5"
             integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
@@ -28,7 +31,7 @@
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                     <h1
-                    hx-get="http://localhost:3001/monthYear"
+                    hx-get="http://192.168.0.87:3001/monthYear"
                     hx-trigger="load, update-month"
                     hx-vals="js:{date: month, year: year}"
                     id="month"></h1>
@@ -49,7 +52,7 @@
                     </tr>
                 </thead>
                 <tbody
-                    hx-post="http://localhost:3001/calendar"
+                    hx-post="http://192.168.0.87:3001/calendar"
                     hx-trigger="load, update-month"
                     hx-vals="js:{date: month, year: year}"
                     id="calendar"></tbody>
@@ -59,7 +62,7 @@
 
     <script>
         const port = 3001;
-        const baseURL = `http://localhost:${port}`;
+        const baseURL = `http://192.168.0.87:${port}`;
         var actualMonth = new Date().getMonth() + 1;
         var adder = 0;
         var month = actualMonth + adder;
