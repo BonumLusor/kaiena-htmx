@@ -11,3 +11,17 @@ a {
     color: white;
 }
 
+.home {
+    position: absolute;
+    top: 10px;
+    font-size: 30px;
+    cursor: pointer;
+    left: 10px;
+}
+.register {
+    position: absolute;
+    top: 10px;
+    font-size: 36px;
+    cursor: pointer;
+    right: 10px;
+}

@@ -22,6 +22,7 @@ app.use(cors());
 (async () => {
     const connection = await mysql.createConnection(process.env.DATABASE_URL);
 
+    // static
     app.get('/', async (req, res) => {
         res.sendFile(__dirname + '/public/index.html');
     });
@@ -86,7 +87,12 @@ app.use(cors());
 
             res.send(response + '</tr>');
         });
+    
+    app.get('/register', (req, res) => {
+        res.sendFile(__dirname + '/public/register.html');
+    })
 
+    // css
     app.get('/styles/main.css', async (req, res) => {
         res.sendFile(__dirname + '/public/styles/main.css');
     });
@@ -96,7 +102,11 @@ app.use(cors());
     app.get('/styles/calendar.css', async (req, res) => {
         res.sendFile(__dirname + '/public/styles/calendar.css');
     });
+    app.get('/styles/register.css', async (req, res) => {
+        res.sendFile(__dirname + '/public/styles/register.css');
+    });
 
+    // components
     app.get('/monthYear', (req, res) => {
         const m = parseInt(req.query.date);
         if (m > 12) m -= 12;
@@ -122,7 +132,6 @@ app.use(cors());
 
         res.send(currentMonth + '/' + year);
     });
-
     app.post('/calendar', (req, res) => {
         const m = parseInt(req.query.date);
         const y = new Date().getFullYear();
@@ -178,7 +187,11 @@ app.use(cors());
 
         res.send(response + '</tr>');
     });
+    app.get('/add-color', (req, res) => {
+        res.send("<input type='color' id='color' name='color' value='#000'>");
+    })
 
+    // database
     app.route('/clients')
         .get(async (req, res) => {
             let status = 200;
