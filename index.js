@@ -27,70 +27,13 @@ app.use(cors());
         res.sendFile(__dirname + '/public/index.html');
     });
 
-    app.route('/calendar')
-        .get((req, res) => {
-            res.sendFile(__dirname + '/public/calendar.html');
-        })
-        .post((req, res) => {
-            const m = parseInt(req.body.date);
-            const y = new Date().getFullYear();
-            if (m > 12) m -= 12;
-            const lastDay = new Date(y, m, 0).getDate();
-            const currentMonth = new Date().getMonth() + 1;
-            const currentYear = y + parseInt(req.body.year);
-            const currentDay = new Date().getDate();
-            let response = '<tr>';
+    app.get('/calendar/:id', (req, res) => {
+        res.sendFile(__dirname + '/public/calendar.html');
+    });
 
-            for (let i = 1; i <= lastDay; i++) {
-                const weekDay = new Date(
-                    currentYear,
-                    m - 1,
-                    i
-                ).toLocaleDateString('en-US', { weekday: 'long' });
-
-                if (i === 1 && weekDay !== 'Monday') {
-                    switch (weekDay) {
-                        case 'Tuesday':
-                            response += "<td><div class='filler'></div></td>";
-                            break;
-                        case 'Wednesday':
-                            response +=
-                                "<td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                            break;
-                        case 'Thursday':
-                            response +=
-                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                            break;
-                        case 'Friday':
-                            response +=
-                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                            break;
-                    }
-                }
-
-                if (weekDay !== 'Saturday' && weekDay !== 'Sunday') {
-                    if (
-                        i === currentDay &&
-                        m === currentMonth &&
-                        y === currentYear
-                    ) {
-                        response += `<td><div class='day-wrapper'><div class='day current-day'>${i}</div></div></td>`;
-                    } else {
-                        response += `<td><div class='day-wrapper'><div class='day'>${i}</div></div></td>`;
-                    }
-                }
-
-                if (weekDay === 'Friday') {
-                    response += '</tr><tr>';
-                }
-            }
-
-            res.send(response + '</tr>');
-        });
-    
     app.get('/register', (req, res) => {
         res.sendFile(__dirname + '/public/register.html');
-    })
+    });
 
     // css
     app.get('/styles/main.css', async (req, res) => {
@@ -111,7 +54,7 @@ app.use(cors());
         const m = parseInt(req.query.date);
         if (m > 12) m -= 12;
         const monthNumber = parseInt(new Date().getMonth()) + 1;
-        const year = new Date().getFullYear() + parseInt(req.query.year);
+        const year = 2023 + parseInt(req.query.year);
 
         const monthName = {
             1: 'Janeiro',
@@ -128,68 +71,133 @@ app.use(cors());
             12: 'Dezembro'
         };
 
-        const currentMonth = monthName[monthNumber];
+        const currentMonth = monthName[m];
 
         res.send(currentMonth + '/' + year);
     });
-    app.post('/calendar', (req, res) => {
-        const m = parseInt(req.query.date);
+
+    app.post('/calendar', async (req, res) => {
+        const m = parseInt(req.body.date);
         const y = new Date().getFullYear();
         if (m > 12) m -= 12;
         const lastDay = new Date(y, m, 0).getDate();
         const currentMonth = new Date().getMonth() + 1;
-        const currentYear = y + parseInt(req.query.year);
+        const currentYear = y + parseInt(req.body.year);
         const currentDay = new Date().getDate();
         let response = '<tr>';
+        let alocatedDays = [];
+        let posts = [];
 
-        for (let i = 1; i <= lastDay; i++) {
-            const weekDay = new Date(currentYear, m - 1, i).toLocaleDateString(
-                'en-US',
-                { weekday: 'long' }
-            );
+        try {
 
-            if (i === 1 && weekDay !== 'Monday') {
-                switch (weekDay) {
-                    case 'Tuesday':
-                        response += "<td><div class='filler'></div></td>";
-                        break;
-                    case 'Wednesday':
-                        response +=
-                            "<td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                        break;
-                    case 'Thursday':
-                        response +=
-                            "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                        break;
-                    case 'Friday':
-                        response +=
-                            "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
-                        break;
+            const query =
+                'SELECT calendar.day, calendar.category, posts.id, posts.name, type_post.type, posts.link_curadoria, posts.subtitle FROM calendar INNER JOIN posts, type_post WHERE calendar.post = posts.id AND posts.cod_type = type_post.id AND calendar.client = 2 AND calendar.month = 4 AND calendar.year = 2023 ORDER BY day;';
+            const [rows] = await connection.query(query, [2, 4, 2023]);
+
+            posts = rows;
+            alocatedDays = rows.map((e) => e.day);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+
+            function matchDay(day) {
+                for (let i = 0; i < posts.length; i++) {
+                    if (posts[i].day === day) {
+                        return posts[i];
+                    }
                 }
             }
 
-            if (weekDay !== 'Saturday' && weekDay !== 'Sunday') {
-                if (
-                    i === currentDay &&
-                    m === currentMonth &&
-                    y === currentYear
-                ) {
-                    response += `<td><div class='day-wrapper'><div class='day current-day'>${i}</div></div></td>`;
-                } else {
-                    response += `<td><div class='day-wrapper'><div class='day'>${i}</div></div></td>`;
-                }
+            function encryptPost(post) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(JSON.stringify(post));
+                return btoa(String.fromCharCode(...new Uint8Array(data)))
             }
 
-            if (weekDay === 'Friday') {
-                response += '</tr><tr>';
+            for (let i = 1; i <= lastDay; i++) {
+                const weekDay = new Date(currentYear, m - 1, i).toLocaleDateString(
+                    'en-US',
+                    { weekday: 'long' }
+                );
+
+                if (i === 1 && weekDay !== 'Monday') {
+                    switch (weekDay) {
+                        case 'Tuesday':
+                            response += "<td><div class='filler'></div></td>";
+                            break;
+                        case 'Wednesday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Thursday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Friday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Saturday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                    }
+                }
+    
+                if (i === lastDay) {
+                    switch (weekDay) {
+                        case 'Monday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Tuesday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Wednesday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Thursday':
+                            response +=
+                                "<td><div class='filler'></div></td><td><div class='filler'></div></td>";
+                            break;
+                        case 'Friday':
+                            response += "<td><div class='filler'></div></td>";
+                            break;
+                    }
+                }
+    
+                if (weekDay !== 'Sunday') {
+                    if (
+                        alocatedDays.includes(i) &&
+                        i === currentDay &&
+                        m === currentMonth &&
+                        y === currentYear
+                    ) {
+                        response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day current-day'>${i}</div><div class='post'>${matchDay(i).name}</div></div></td>`;
+                    } else if ( matchDay(i) ) {
+                        response += `<td><div class='day-wrapper' onclick='openModal("${encryptPost(matchDay(i))}")'><div class='day'>${i}</div><div class='post'>${matchDay(i).name}</div></div></td>`;
+                    } else {
+                        response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day'>${i}</div></div></td>`;
+                    }
+                }
+    
+                if (weekDay === 'Saturday') {
+                    response += '</tr><tr>';
+                }
+                
             }
+    
+            res.send(response + '</tr>');
+
         }
-
-        res.send(response + '</tr>');
     });
+
+
     app.get('/add-color', (req, res) => {
         res.send("<input type='color' id='color' name='color' value='#000'>");
-    })
+    });
 
     // database
     app.route('/clients')
@@ -226,7 +234,6 @@ app.use(cors());
                 res.status(status).json(retVal);
             }
         })
-
         .put(async (req, res) => {
             let data = req.body;
             let status = 200;
@@ -348,31 +355,14 @@ app.use(cors());
         }
     });
 
-    app.get('/long_post', async (req, res) => {
-        let status = 200;
-        let retVal = {};
-
-        try {
-            const query =
-                'SELECT posts.id, posts.name, posts.subtitle, posts.link_curadoria, category_post.category, type_post.type FROM posts INNER JOIN type_post ON type_post.id=posts.cod_type INNER JOIN category_post ON category_post.id=posts.cod_categories;';
-            const [rows] = await connection.query(query);
-            retVal.data = rows;
-        } catch (error) {
-            console.error(error);
-            retVal.error = error;
-            status = 500;
-        } finally {
-            res.status(status).json(retVal);
-        }
-    });
-
     app.route('/posts')
         .get(async (req, res) => {
             let status = 200;
             let retVal = {};
-
+    
             try {
-                const query = 'SELECT * FROM posts;';
+                const query =
+                    'SELECT posts.id, posts.name, posts.subtitle, posts.link_curadoria, category_post.category, type_post.type FROM posts INNER JOIN type_post ON type_post.id=posts.cod_type INNER JOIN category_post ON category_post.id=posts.cod_categories;';
                 const [rows] = await connection.query(query);
                 retVal.data = rows;
             } catch (error) {

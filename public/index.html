@@ -33,13 +33,11 @@
     </body>
 
     <script>
-        const port = 3001;
-        const baseURL = `http://192.168.0.87:${port}`;
         let clients = [];
         const clientWrapper = document.getElementById('client-wrapper');
 
         try {
-            fetch(`${baseURL}/clients`)
+            fetch(`/clients`)
                 .then((response) => response.json())
                 .then((response) => {
                     clients = response.data;
@@ -47,12 +45,11 @@
                         clientWrapper.innerHTML += `
                             <div class="gradient-border" id="${element.name}" >
                                
-                                <a class="client" href="/calendar">
+                                <a class="client" href="/calendar/${element.id}">
                                     <h1>${element.name}</h1>
                                 </a>
                             </div>
                         `;
-                        console.log(element.color.split(','))
                         const client = document.getElementById(element.name);
                         const length = element.color.split(',').length;
                         let border = 'linear-gradient(45deg, ';
@@ -73,7 +70,6 @@
                                 border += ')';
                             }
                         });
-                        console.log(border)
                         client.style.background = border;
                     });
                 });

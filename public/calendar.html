@@ -11,7 +11,7 @@
             href="../styles/calendar.css" />
             <link
             rel="stylesheet"
-            href="./styles/main.css" />
+            href="../styles/main.css" />
         <script
             src="https://unpkg.com/htmx.org@1.9.5"
             integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
@@ -38,7 +38,7 @@
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                     <h1
-                    hx-get="http://192.168.0.87:3001/monthYear"
+                    hx-get="/monthYear"
                     hx-trigger="load, update-month"
                     hx-vals="js:{date: month, year: year}"
                     id="month"></h1>
@@ -56,25 +56,30 @@
                         <th><div class="table-header">Quarta</div></th>
                         <th><div class="table-header">Quinta</div></th>
                         <th><div class="table-header">Sexta</div></th>
+                        <th><div class="table-header">Sábado</div></th>
                     </tr>
                 </thead>
                 <tbody
-                    hx-post="http://192.168.0.87:3001/calendar"
+                    hx-post="/calendar"
                     hx-trigger="load, update-month"
                     hx-vals="js:{date: month, year: year}"
                     id="calendar"></tbody>
             </table>
         </div>
+        <div class="mask">
+            <div class="modal">
+
+            </div>
+        </div>
     </body>
 
     <script>
-        const port = 3001;
-        const baseURL = `http://192.168.0.87:${port}`;
         var actualMonth = new Date().getMonth() + 1;
+        const url = window.location.href.split('/');
         var adder = 0;
         var month = actualMonth + adder;
         var year = 0;
-        var clientId = 20;
+        var clientId = url[url.length - 1];
         var client = {};
         const name = document.querySelector('#client-name');
         let border = 'linear-gradient(45deg, ';
@@ -93,7 +98,7 @@
         }
 
         try {
-            fetch(`${baseURL}/clients/${clientId}`)
+            fetch(`/clients/${clientId}`)
                 .then((response) => response.json())
                 .then((response) => {
                     client = response.data;
@@ -116,14 +121,40 @@
                         }
                     });
 
-                    document.getElementById(
-                        'background-image'
-                    ).style.backgroundImage = border;
+                    const backgroundImage = document.querySelector('#background-image');
+
+                    backgroundImage.style.backgroundImage = border;
+                    backgroundImage.style.borderRadius = '4px';
                 });
         } catch (error) {
             console.log(error);
         }
 
+
+        const openModal = (postData = null) => {
+            const mask = document.getElementsByClassName('mask')[0];
+            const modal = document.getElementsByClassName('modal')[0];
+
+            if (postData) {
+                const decodedData = new Uint8Array(atob(postData).split('').map(char => char.charCodeAt(0)));
+                const decoder = new TextDecoder('utf-8');
+                const originalStr = decoder.decode(decodedData);
+                console.log(JSON.parse(originalStr));
+            }
+
+            mask.style.display = 'block';
+            mask.addEventListener('click', () => {
+                mask.style.display = 'none';
+                modal.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                });
+            });
+            addEventListener('keyup', (event) => {
+                if (event.key === 'Escape') {
+                    mask.style.display = 'none';
+                }
+            });
+        }
         
 
     </script>
