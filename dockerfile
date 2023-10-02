@@ -1,8 +1,8 @@
 FROM node:latest
 
-COPY . /www/
+COPY . /www/Como norm
 WORKDIR /www/
 
-RUN node installdocker build -t kaiena .
+RUN npm install
 
-CMD [ "npm", "run", "start" ]
+CMD ["npm","run", "start"]

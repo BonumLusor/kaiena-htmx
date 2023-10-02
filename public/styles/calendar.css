@@ -124,13 +124,13 @@ td {
     }
 }
     
-
 .current-day {
-    border: white solid 2px;
     width: 25px;
     height: 25px;
-    text-align: center;
-    line-height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: solid 1px white;
     border-radius: 50%;
 }
 

@@ -78,11 +78,11 @@ app.use(cors());
 
     app.post('/calendar', async (req, res) => {
         const m = parseInt(req.body.date);
-        const y = new Date().getFullYear();
+        const y = 2023 + parseInt(req.body.year);
         if (m > 12) m -= 12;
         const lastDay = new Date(y, m, 0).getDate();
         const currentMonth = new Date().getMonth() + 1;
-        const currentYear = y + parseInt(req.body.year);
+        const currentYear = new Date().getFullYear();
         const currentDay = new Date().getDate();
         let response = '<tr>';
         let alocatedDays = [];
@@ -170,14 +170,16 @@ app.use(cors());
     
                 if (weekDay !== 'Sunday') {
                     if (
-                        alocatedDays.includes(i) &&
+                        matchDay(i) &&
                         i === currentDay &&
                         m === currentMonth &&
                         y === currentYear
                     ) {
-                        response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day current-day'>${i}</div><div class='post'>${matchDay(i).name}</div></div></td>`;
+                        response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day'><p class="current-day">${i}</p></div><div class='post'>${matchDay(i).name}</div></div></td>`;
                     } else if ( matchDay(i) ) {
                         response += `<td><div class='day-wrapper' onclick='openModal("${encryptPost(matchDay(i))}")'><div class='day'>${i}</div><div class='post'>${matchDay(i).name}</div></div></td>`;
+                    } else if (i === currentDay && m === currentMonth && y === currentYear) {
+                        response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day'><p class="current-day">${i}</p></div></div></td>`;
                     } else {
                         response += `<td><div class='day-wrapper' onclick="openModal()"><div class='day'>${i}</div></div></td>`;
                     }
